@@ -1,0 +1,17 @@
+{
+  "description": "RailVoice mini-program. miniprogramRoot is the tsc/transpile output (pnpm build).",
+  "miniprogramRoot": "dist/",
+  "compileType": "miniprogram",
+  "libVersion": "2.27.3",
+  "appid": "touristappid",
+  "projectname": "railvoice-miniprogram",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": false,
+    "minified": false,
+    "compileHotReLoad": false
+  },
+  "condition": {}
+}

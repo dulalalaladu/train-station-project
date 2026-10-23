@@ -1,0 +1,3 @@
+# per-developer WeChat developer tool state (may contain the real AppID) and local e2e output
+project.private.config.json
+e2e/last-run.json
