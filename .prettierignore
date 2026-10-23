@@ -1,0 +1,15 @@
+# generated / vendored
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+.venv/
+pnpm-lock.yaml
+uv.lock
+
+# prose and the plan are authored by agents/humans; not format-gated
+docs/
+
+# ROS 2 workspace is owned by edge/ (colcon artefacts, package.xml, C++)
+edge/ros2_ws/

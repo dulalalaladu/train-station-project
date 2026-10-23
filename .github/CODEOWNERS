@@ -1,0 +1,51 @@
+# Directory -> responsible Agent (plan §9.1 / §9.3). The Agents (A-1..A-7) are Paperclip
+# agents, not GitHub accounts, so every rule resolves to the repository owner, who is the
+# required human reviewer on GitHub; the owning Agent is named in the comment above each
+# rule. Last matching pattern wins, so keep specific paths below general ones.
+
+# A-0 chief architect: default owner, plan, ADRs, cross-cutting docs
+*                               @dulalalaladu
+/docs/                          @dulalalaladu
+/docs/adr/                      @dulalalaladu
+
+# A-1 cloud backend: gateway, protocol, shared (error codes), API docs
+/apps/gateway/                  @dulalalaladu
+/packages/protocol/             @dulalalaladu
+/packages/shared/               @dulalalaladu
+/docs/api/                      @dulalalaladu
+
+# A-2 frontend: mini program, admin web
+/apps/miniprogram/              @dulalalaladu
+/apps/admin-web/                @dulalalaladu
+
+# A-3 edge / dog: ROS 2 workspace, OTA agent, arm64 images, hardware docs
+/edge/                          @dulalalaladu
+/docs/hardware/                 @dulalalaladu
+
+# A-4 speech & intent: lexicon engine, ASR evaluation
+/packages/lexicon/              @dulalalaladu
+/tools/asr-eval/                @dulalalaladu
+
+# A-5 test engineering: simulators, load tests, test plans
+/tools/mock-xfyun/              @dulalalaladu
+/tools/load/                    @dulalalaladu
+/edge/sim/dog-sim/              @dulalalaladu
+/docs/test-plans/               @dulalalaladu
+
+# A-6 verification & compliance
+/docs/compliance/               @dulalalaladu
+
+# A-7 deployment & operations: infra, CI/CD, repo tooling, runbooks
+/infra/                         @dulalalaladu
+/.github/                       @dulalalaladu
+/.husky/                        @dulalalaladu
+/scripts/                       @dulalalaladu
+/docs/runbooks/                 @dulalalaladu
+/package.json                   @dulalalaladu
+/pnpm-workspace.yaml            @dulalalaladu
+/pnpm-lock.yaml                 @dulalalaladu
+/turbo.json                     @dulalalaladu
+/pyproject.toml                 @dulalalaladu
+/uv.lock                        @dulalalaladu
+/eslint.config.mjs              @dulalalaladu
+/commitlint.config.mjs          @dulalalaladu

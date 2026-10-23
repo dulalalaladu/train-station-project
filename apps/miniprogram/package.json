@@ -1,0 +1,18 @@
+{
+  "name": "@railvoice/miniprogram",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "微信小程序（原生 + TypeScript + TDesign + MobX）：语音指令、对讲、告警。",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

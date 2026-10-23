@@ -1,0 +1,17 @@
+[project]
+name = "dog-sim"
+version = "0.0.0"
+description = "虚拟狗（无 ROS 依赖）：订阅 MQTT、回 ack、发遥测、可注入告警；CI 使用。"
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dog_sim"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=dog_sim --cov-report=term-missing --cov-fail-under=80"

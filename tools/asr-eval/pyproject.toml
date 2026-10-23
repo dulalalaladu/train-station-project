@@ -1,0 +1,17 @@
+[project]
+name = "asr-eval"
+version = "0.0.0"
+description = "语料回放与 ASR 准确率（CER、意图准确率、延迟）评估。"
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/asr_eval"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=asr_eval --cov-report=term-missing --cov-fail-under=80"

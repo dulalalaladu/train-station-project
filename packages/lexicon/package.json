@@ -1,0 +1,18 @@
+{
+  "name": "@railvoice/lexicon",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "词库模型、归一化与匹配引擎（纯 TS，前后端共用）。",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
