@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+.pnpm-store/
+.venv/
+__pycache__/
+*.pyc
+
+# builds
+dist/
+build/
+coverage/
+.turbo/
+*.tsbuildinfo
+edge/ros2_ws/build/
+edge/ros2_ws/install/
+edge/ros2_ws/log/
+
+# secrets and local config (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets/
+
+# audio / media samples that are not part of the committed test corpus
+*.wav
+*.pcm
+*.opus
+*.mp4
+!tools/asr-eval/fixtures/**
+
+# OS / editor / agent runtime
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
+.claude/
+.paperclip/

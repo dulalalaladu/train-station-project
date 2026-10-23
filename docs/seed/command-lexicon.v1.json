@@ -1,0 +1,141 @@
+{
+  "$schema": "https://railvoice.local/schemas/lexicon-seed.v1.json",
+  "version": "1.0.0",
+  "source": "铁路站场人机语音互动系统开发需求说明书 V4（2026-10-19）第七章",
+  "roles": ["worker", "guard", "dispatcher", "admin"],
+  "intents": [
+    {
+      "code": "STOP",
+      "category": "control",
+      "min_role": "worker",
+      "priority": 0,
+      "canonical_zh": "停下",
+      "aliases": [
+        { "phrase": "歇倒", "dialect_tag": "四川话" },
+        { "phrase": "莫动", "dialect_tag": "西南官话" },
+        { "phrase": "站住", "dialect_tag": "通用" },
+        { "phrase": "别动", "dialect_tag": "通用" },
+        { "phrase": "停", "dialect_tag": "通用" }
+      ],
+      "english": ["stop", "halt", "freeze"],
+      "action": "smooth_stop",
+      "reply_zh": "已停下",
+      "reply_en": "Stopped",
+      "slots": {}
+    },
+    {
+      "code": "GO_TO",
+      "category": "control",
+      "min_role": "guard",
+      "priority": 5,
+      "canonical_zh": "去{waypoint}点",
+      "aliases": [
+        { "phrase": "去{waypoint}点嘛", "dialect_tag": "西南官话" },
+        { "phrase": "到{waypoint}那儿", "dialect_tag": "北方话" },
+        { "phrase": "去{waypoint}", "dialect_tag": "通用" }
+      ],
+      "english": ["go to point {waypoint}", "go to {waypoint}"],
+      "action": "navigate_to",
+      "reply_zh": "收到，前往{waypoint}点",
+      "reply_en": "Heading to point {waypoint}",
+      "slots": { "waypoint": { "type": "waypoint_ref", "required": true } }
+    },
+    {
+      "code": "START_PATROL",
+      "category": "control",
+      "min_role": "guard",
+      "priority": 5,
+      "canonical_zh": "开始巡检",
+      "aliases": [
+        { "phrase": "开始巡一圈", "dialect_tag": "通用" },
+        { "phrase": "去巡检", "dialect_tag": "通用" }
+      ],
+      "english": ["start patrol", "begin patrol"],
+      "action": "start_patrol",
+      "reply_zh": "巡检开始",
+      "reply_en": "Patrol started",
+      "slots": { "route": { "type": "patrol_route_ref", "required": false } }
+    },
+    {
+      "code": "RETURN_HOME",
+      "category": "control",
+      "min_role": "guard",
+      "priority": 4,
+      "canonical_zh": "回巢",
+      "aliases": [
+        { "phrase": "回去充电", "dialect_tag": "通用" },
+        { "phrase": "回基地", "dialect_tag": "通用" }
+      ],
+      "english": ["return to base", "go home", "go charge"],
+      "action": "return_home",
+      "reply_zh": "正在返回基地",
+      "reply_en": "Returning to base",
+      "slots": {}
+    },
+    {
+      "code": "FOLLOW_ME",
+      "category": "control",
+      "min_role": "guard",
+      "priority": 5,
+      "canonical_zh": "跟我走",
+      "aliases": [
+        { "phrase": "跟着我", "dialect_tag": "通用" },
+        { "phrase": "随我走", "dialect_tag": "通用" }
+      ],
+      "english": ["follow me"],
+      "action": "follow",
+      "reply_zh": "跟上你了",
+      "reply_en": "Following you",
+      "slots": {}
+    },
+    {
+      "code": "TURN",
+      "category": "control",
+      "min_role": "guard",
+      "priority": 5,
+      "canonical_zh": "{direction}转",
+      "aliases": [
+        { "phrase": "往{direction}拐", "dialect_tag": "北方话" },
+        { "phrase": "朝{direction}", "dialect_tag": "通用" }
+      ],
+      "english": ["turn {direction}"],
+      "action": "turn",
+      "reply_zh": "{direction}转",
+      "reply_en": "Turning {direction}",
+      "slots": { "direction": { "type": "enum", "values": ["左", "右"], "en": { "left": "左", "right": "右" }, "required": true } }
+    },
+    {
+      "code": "SPEED",
+      "category": "control",
+      "min_role": "guard",
+      "priority": 5,
+      "canonical_zh": "{delta}速",
+      "aliases": [
+        { "phrase": "快点", "dialect_tag": "通用", "slot_fill": { "delta": "加" } },
+        { "phrase": "慢点", "dialect_tag": "通用", "slot_fill": { "delta": "减" } }
+      ],
+      "english": ["speed up", "slow down"],
+      "action": "adjust_speed",
+      "reply_zh": "已{delta}速",
+      "reply_en": "{delta_en}",
+      "slots": { "delta": { "type": "enum", "values": ["加", "减"], "en": { "speed up": "加", "slow down": "减" }, "required": true } }
+    },
+    { "code": "QUERY_BATTERY", "category": "query", "min_role": "worker", "priority": 7, "canonical_zh": "电量多少", "aliases": [{ "phrase": "还有多少电", "dialect_tag": "通用" }], "english": ["battery level", "how much battery"], "action": "report_battery", "reply_zh": "当前电量{battery}%", "reply_en": "Battery at {battery}%", "slots": {} },
+    { "code": "QUERY_STATUS", "category": "query", "min_role": "worker", "priority": 7, "canonical_zh": "状态如何", "aliases": [{ "phrase": "现在在干啥", "dialect_tag": "北方话" }], "english": ["status", "what are you doing"], "action": "report_status", "reply_zh": "{status_sentence}", "reply_en": "{status_sentence_en}", "slots": {} },
+    { "code": "QUERY_LAST_ALERT", "category": "query", "min_role": "worker", "priority": 7, "canonical_zh": "上次告警", "aliases": [{ "phrase": "刚才报的啥", "dialect_tag": "北方话" }], "english": ["last alert"], "action": "report_last_alert", "reply_zh": "{last_alert_sentence}", "reply_en": "{last_alert_sentence_en}", "slots": {} },
+    { "code": "QUERY_LOCATION", "category": "query", "min_role": "worker", "priority": 7, "canonical_zh": "你在哪", "aliases": [{ "phrase": "你在哪儿", "dialect_tag": "北方话" }, { "phrase": "你到哪了", "dialect_tag": "通用" }], "english": ["where are you"], "action": "report_location", "reply_zh": "我在{location}", "reply_en": "I am at {location}", "slots": {} },
+    { "code": "ANNOUNCE_RESTRICTED", "category": "announce", "min_role": "guard", "priority": 3, "canonical_zh": "禁区警示", "aliases": [], "english": ["restricted area warning"], "action": "announce", "announcement_code": "restricted_warning", "reply_zh": "禁区有人闯入，请注意", "reply_en": "Unauthorized person in restricted area", "lights": true, "slots": {} },
+    { "code": "ANNOUNCE_CROWD", "category": "announce", "min_role": "guard", "priority": 6, "canonical_zh": "客流疏导", "aliases": [], "english": ["crowd guidance"], "action": "announce", "announcement_code": "crowd_guidance", "reply_zh": "前方列车即将进站，请退到安全线内等候", "reply_en": "Train arriving, please stay behind the safety line", "slots": {} },
+    { "code": "ANNOUNCE_ANTI_FRAUD", "category": "announce", "min_role": "guard", "priority": 8, "canonical_zh": "反诈宣传", "aliases": [], "english": ["anti-fraud notice"], "action": "announce", "announcement_code": "anti_fraud", "reply_zh": "陌生来电别轻信，官方渠道才安心，购票认准 12306", "reply_en": "Beware of scam calls; buy tickets only via 12306", "slots": {} },
+    { "code": "ANNOUNCE_BELONGINGS", "category": "announce", "min_role": "guard", "priority": 8, "canonical_zh": "保管物品提示", "aliases": [], "english": ["belongings notice"], "action": "announce", "announcement_code": "belongings", "reply_zh": "请保管好随身物品，防止遗失", "reply_en": "Please keep your belongings safe", "slots": {} }
+  ],
+  "alerts": [
+    { "type": "intrusion", "severity": "critical", "message_zh": "禁区有人闯入，请注意", "message_en": "Unauthorized person in restricted area", "channels": ["miniprogram", "duty_group"] },
+    { "type": "tilt", "severity": "major", "message_zh": "货场{zone}区货物倾斜，遮挡消防栓", "message_en": "Cargo tilted in zone {zone}, blocking hydrant", "channels": ["miniprogram", "duty_group"] },
+    { "type": "track_obstacle", "severity": "critical", "message_zh": "检测到轨道异物，位置见推送", "message_en": "Obstacle detected on track", "channels": ["miniprogram", "dispatch_group"] },
+    { "type": "low_battery", "severity": "minor", "message_zh": "电量低，正在返回基地", "message_en": "Low battery, returning to base", "channels": ["miniprogram"] }
+  ],
+  "offline_core_commands": ["STOP", "RETURN_HOME", "FOLLOW_ME", "START_PATROL"],
+  "emergency_stop_phrases": ["停下", "站住", "莫动", "歇倒", "别动", "停", "stop", "halt"],
+  "hotwords_railway": ["巡检", "禁区", "道岔", "股道", "车挡", "法兰", "溜逸", "侵限", "天窗", "调车", "编组", "到发线", "牵出线", "驼峰", "信号机", "消防栓", "货场", "站台", "候车区", "机械室", "配电间", "检修地沟"]
+}
