@@ -1,0 +1,14 @@
+[tool.pytest.ini_options]
+testpaths = ["test"]
+addopts = "-ra --strict-markers --cov=dog_vendor_bridge --cov-report=term-missing --cov-fail-under=80"
+
+[tool.coverage.run]
+omit = ["*/fake_bridge.py"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP006", "UP007"]
+ignore = ["UP006", "UP007"]
