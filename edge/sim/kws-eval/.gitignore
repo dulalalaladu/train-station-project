@@ -1,0 +1,9 @@
+.cache/
+.venv/
+results/
+results_*/
+*.err
+.coverage
+.pytest_cache/
+.ruff_cache/
+__pycache__/
