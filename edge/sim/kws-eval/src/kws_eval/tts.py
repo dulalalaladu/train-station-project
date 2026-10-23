@@ -57,9 +57,29 @@ def _build(sherpa_onnx, vits, rule_fsts: str, num_threads: int):  # noqa: ANN001
 class TtsSynth:
     """One language-specific speaker bank; ``synth`` returns 16 kHz mono float32."""
 
-    def __init__(self, tts, speakers: tuple[int, ...]) -> None:  # noqa: ANN001
+    def __init__(self, tts, speakers: tuple[int, ...], name: str = "tts") -> None:  # noqa: ANN001
         self._tts = tts
         self.speakers = speakers
+        self.name = name
+
+    def tag(self, speaker: int) -> str:
+        """Voice label recorded in the manifest, e.g. ``aishell3:28``."""
+        return f"{self.name}:{speaker}"
+
+    @classmethod
+    def melo_chinese(cls, model_dir: Path, num_threads: int = 2) -> TtsSynth:
+        """MeloTTS zh/en (single female Mandarin voice) - the most natural voice we have."""
+        import sherpa_onnx
+
+        _require(model_dir, ("model.onnx", "lexicon.txt", "tokens.txt", "dict"))
+        vits = sherpa_onnx.OfflineTtsVitsModelConfig(
+            model=str(model_dir / "model.onnx"),
+            lexicon=str(model_dir / "lexicon.txt"),
+            tokens=str(model_dir / "tokens.txt"),
+            dict_dir=str(model_dir / "dict"),
+        )
+        fsts = ",".join(str(model_dir / f) for f in ("phone.fst", "date.fst", "number.fst"))
+        return cls(_build(sherpa_onnx, vits, fsts, num_threads), (0,), "melo")
 
     @classmethod
     def chinese(cls, model_dir: Path, num_threads: int = 2) -> TtsSynth:
@@ -72,7 +92,7 @@ class TtsSynth:
             tokens=str(model_dir / "tokens.txt"),
         )
         fsts = ",".join(str(model_dir / f) for f in ("phone.fst", "date.fst", "number.fst"))
-        return cls(_build(sherpa_onnx, vits, fsts, num_threads), ZH_SPEAKERS)
+        return cls(_build(sherpa_onnx, vits, fsts, num_threads), ZH_SPEAKERS, "aishell3")
 
     @classmethod
     def english(cls, model_dir: Path, num_threads: int = 2) -> TtsSynth:
@@ -87,7 +107,7 @@ class TtsSynth:
             tokens=str(model_dir / "tokens.txt"),
             data_dir=str(short_espeak_dir(model_dir / "espeak-ng-data")),
         )
-        return cls(_build(sherpa_onnx, vits, "", num_threads), EN_SPEAKERS)
+        return cls(_build(sherpa_onnx, vits, "", num_threads), EN_SPEAKERS, "libritts")
 
     def synth(self, text: str, speaker: int, speed: float = 1.0) -> np.ndarray:
         audio = self._tts.generate(text, sid=speaker, speed=speed)
@@ -95,3 +115,19 @@ class TtsSynth:
         if samples.size == 0:
             raise RuntimeError(f"TTS produced no audio for {text!r} (sid={speaker})")
         return resample(samples, audio.sample_rate, SAMPLE_RATE)
+
+
+class VoiceBank:
+    """Several ``TtsSynth`` engines presented as one flat speaker list (index = speaker)."""
+
+    def __init__(self, banks: tuple[TtsSynth, ...]) -> None:
+        self._voices = [(bank, sid) for bank in banks for sid in bank.speakers]
+        self.speakers = tuple(range(len(self._voices)))
+
+    def synth(self, text: str, speaker: int, speed: float = 1.0) -> np.ndarray:
+        bank, sid = self._voices[speaker]
+        return bank.synth(text, sid, speed)
+
+    def tag(self, speaker: int) -> str:
+        bank, sid = self._voices[speaker]
+        return bank.tag(sid)

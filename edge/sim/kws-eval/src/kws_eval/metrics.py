@@ -134,17 +134,20 @@ def hours_needed_for_bound(target_per_hour: float, confidence: float = 0.95) -> 
     return poisson_upper(0, confidence) / target_per_hour
 
 
-def gated_false_alarms(timeline: tuple[tuple[str, float], ...], wake: str, window_s: float) -> int:
+def gated_false_alarms(
+    timeline: tuple[tuple[str, float], ...], wake: str | tuple[str, ...], window_s: float
+) -> int:
     """Count command detections that follow a wake-word detection within ``window_s``.
 
     This is the measured (not modelled) false-alarm count of the "wake word + command" rule on
-    the negative corpus; commands = every keyword other than ``wake``.
+    the negative corpus; commands = every keyword that is not a wake word.
     """
-    wake_times = [t for name, t in timeline if name == wake]
+    wakes = (wake,) if isinstance(wake, str) else tuple(wake)
+    wake_times = [t for name, t in timeline if name in wakes]
     return sum(
         1
         for name, t in timeline
-        if name != wake and any(0.0 < t - w <= window_s for w in wake_times)
+        if name not in wakes and any(0.0 < t - w <= window_s for w in wake_times)
     )
 
 

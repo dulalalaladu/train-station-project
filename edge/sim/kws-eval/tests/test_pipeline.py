@@ -88,10 +88,25 @@ def test_choose_prefers_recall_among_configs_under_the_false_alarm_gate(corpus):
     quiet = evaluate(FakeEngine(threshold=0.99), manifest, tmp, "quiet")  # 0 FA, 0 recall
     loud = evaluate(FakeEngine(threshold=0.2), manifest, tmp, "loud")  # 1 FA in 6 s -> >1/h
     assert sweep.choose([quiet, loud]).label == "quiet"
-    assert sweep.choose([loud]).label == "loud"  # nothing meets the gate: fewest alarms wins
+    assert sweep.choose([loud]).label == "loud"  # nothing meets the gate: penalised recall wins
     assert sweep.mean_noisy_recall(loud) == 0.0  # the only noisy clip is the missed one
+
+
+def test_core_views_exclude_extra_keywords(corpus):
+    tmp, manifest = corpus
+    extra = _positive("p_clean.wav").model_copy(update={"keyword": "别动"})
+    mixed = manifest.model_copy(update={"positives": (*manifest.positives, extra)})
+    res = evaluate(FakeEngine(), mixed, tmp)
+    assert len(res.clip_results) == 3 and len(res.core_clips) == 2
+    assert res.core_false_alarms == res.false_alarm.total  # only the core keyword fired
+    assert "别动 (extra)" in report.per_keyword_table(res)
+    assert "voice bank" in report.voice_table(res)
+    assert "别动" in report.keyword_matrix([res])
 
 
 def test_grid_sizes(tmp_path):
     assert len(sweep.grid("quick", tmp_path)) == len(sweep.TUNINGS_QUICK)
     assert len(sweep.grid("full", tmp_path)) == 3 * len(sweep.TUNINGS_FULL)
+    assert len(sweep.grid("variants", tmp_path)) == 3
+    with pytest.raises(ValueError, match="unknown grid"):
+        sweep.grid("huge", tmp_path)

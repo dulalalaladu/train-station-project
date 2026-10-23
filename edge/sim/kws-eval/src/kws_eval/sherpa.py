@@ -11,7 +11,7 @@ import numpy as np
 from kws_eval.audio import SAMPLE_RATE
 from kws_eval.engine import Detection, EngineUnavailableError
 from kws_eval.keywords import (
-    KEYWORDS,
+    ALL_KEYWORDS,
     KeywordSpec,
     KeywordTuning,
     keyword_file_lines,
@@ -82,7 +82,7 @@ class _Session:
 class SherpaEngine:
     """Builds a ``KeywordSpotter`` for the full §4.3.4 keyword table."""
 
-    def __init__(self, cfg: SherpaConfig, specs: tuple[KeywordSpec, ...] = KEYWORDS) -> None:
+    def __init__(self, cfg: SherpaConfig, specs: tuple[KeywordSpec, ...] = ALL_KEYWORDS) -> None:
         import sherpa_onnx  # imported lazily so unit tests need no native wheel
 
         self.cfg = cfg

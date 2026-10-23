@@ -3,7 +3,7 @@ import pytest
 
 from kws_eval import noise
 from kws_eval.corpus import CorpusConfig, Variant, variants_for
-from kws_eval.keywords import KEYWORDS
+from kws_eval.keywords import ALL_KEYWORDS
 from kws_eval.manifest import Manifest, NegativeClip, PositiveClip
 from kws_eval.negatives import FILE_SECONDS, _plans
 from kws_eval.sentences import DECOY_EN, DECOY_ZH, SPEECH_EN, SPEECH_ZH
@@ -28,7 +28,7 @@ def test_negative_sentences_never_contain_a_real_keyword():
     banks = SPEECH_ZH + SPEECH_EN + DECOY_ZH + DECOY_EN
     for sentence in banks:
         lowered = sentence.lower()
-        for kw in KEYWORDS:
+        for kw in ALL_KEYWORDS:
             assert kw.text.lower() not in lowered, f"{sentence!r} contains {kw.text!r}"
 
 

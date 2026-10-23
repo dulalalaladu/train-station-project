@@ -48,6 +48,13 @@ TTS_ZH = ModelSpec(
     top_dir="vits-icefall-zh-aishell3",
 )
 
+TTS_MELO = ModelSpec(
+    key="tts-vits-melo-tts-zh_en",
+    url=f"{_RELEASES}/tts-models/vits-melo-tts-zh_en.tar.bz2",
+    sha256="e58351ed7149f290a54534538badd4077cdbe6fddc964b24d0bee870415d1514",
+    top_dir="vits-melo-tts-zh_en",  # observed on first download; model licence file ships inside
+)
+
 TTS_EN = ModelSpec(
     key="tts-vits-piper-en_US-libritts_r-medium-int8",
     url=f"{_RELEASES}/tts-models/vits-piper-en_US-libritts_r-medium-int8.tar.bz2",

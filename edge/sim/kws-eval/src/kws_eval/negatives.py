@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -11,14 +12,16 @@ import numpy as np
 from kws_eval.audio import SAMPLE_RATE, active_rms, mix_at_snr_rms, normalise_peak, write_wav
 from kws_eval.corpus import CorpusConfig, Variant, available_noise, trimmed_utterance
 from kws_eval.manifest import NegativeClip
-from kws_eval.noise import bed_clips, noise_bed
+from kws_eval.noise import SYNTH_KINDS, bed_clips, noise_bed
 from kws_eval.sentences import DECOY_EN, DECOY_ZH, SPEECH_EN, SPEECH_ZH
-from kws_eval.tts import TtsSynth
+from kws_eval.tts import TtsSynth, VoiceBank
 
 log = logging.getLogger(__name__)
 
 FILE_SECONDS = 300.0  # each negative stream file is ~5 minutes
-SHARE = {"speech": 0.60, "noise": 0.25, "decoy": 0.15}
+SHARE = {"speech": 0.50, "noise": 0.25, "decoy": 0.25}
+# noise-only files cycle through these (most yard-like first)
+NOISE_ONLY_ORDER = ("yard", "esc", "pink", "white")
 SPEECH_SNRS = (20.0, 10.0, 5.0)
 ZH_SHARE = 0.7
 NOISE_ONLY_RMS = 0.06
@@ -42,8 +45,8 @@ def _random_variant(rng: np.random.Generator, speakers: tuple[int, ...]) -> Vari
 
 def _speech_track(
     cfg: CorpusConfig,
-    zh: TtsSynth,
-    en: TtsSynth,
+    zh: TtsSynth | VoiceBank,
+    en: TtsSynth | VoiceBank,
     bank: tuple[tuple[str, ...], tuple[str, ...]],
     seconds: float,
     rng: np.random.Generator,
@@ -79,8 +82,9 @@ def _make_noise_file(plan: _Plan, seed: int) -> np.ndarray:
 
 
 def _plans(cfg: CorpusConfig) -> list[_Plan]:
-    total_files = max(3, round(cfg.neg_minutes * 60.0 / FILE_SECONDS))
-    kinds = ("white", "pink", "yard") + tuple(k for k in ("esc", "custom") if bed_clips(k))
+    total_files = max(3, math.ceil(cfg.neg_minutes * 60.0 / FILE_SECONDS))
+    sampled = tuple(k for k in ("custom", "esc") if bed_clips(k))
+    kinds = tuple(k for k in (*sampled, *NOISE_ONLY_ORDER) if k in SYNTH_KINDS + sampled)
     speech_noise = available_noise(cfg)
     plans: list[_Plan] = []
     for kind, share in SHARE.items():
@@ -94,7 +98,7 @@ def _plans(cfg: CorpusConfig) -> list[_Plan]:
 
 
 def build_negatives(
-    cfg: CorpusConfig, zh: TtsSynth, en: TtsSynth, out_dir: Path
+    cfg: CorpusConfig, zh: TtsSynth | VoiceBank, en: TtsSynth | VoiceBank, out_dir: Path
 ) -> list[NegativeClip]:
     """Write ~``cfg.neg_minutes`` of keyword-free streams under ``out_dir/neg``."""
     clips: list[NegativeClip] = []

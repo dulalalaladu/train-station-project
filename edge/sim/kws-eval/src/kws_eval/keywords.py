@@ -33,6 +33,7 @@ class KeywordSpec:
     lang: str  # "zh" | "en"
     intent: str
     is_wake: bool = False
+    extra: bool = False  # candidate beyond the plan's §4.3.4 list
 
     @property
     def name(self) -> str:
@@ -60,11 +61,28 @@ KEYWORDS: tuple[KeywordSpec, ...] = (
     KeywordSpec("小铁小铁", "zh", WAKE, is_wake=True),
 )
 
+# Candidate additions evaluated alongside the plan's list (not part of the §4.3.4 gate): longer
+# or more distinctive forms taken from docs/seed/command-lexicon.v1.json aliases, plus longer STOP
+# forms and an alternative wake word. They answer "would a longer alias spot better?".
+EXTRA_KEYWORDS: tuple[KeywordSpec, ...] = (
+    KeywordSpec("别动", "zh", STOP, extra=True),
+    KeywordSpec("马上停下", "zh", STOP, extra=True),
+    KeywordSpec("停下来", "zh", STOP, extra=True),
+    KeywordSpec("随我走", "zh", FOLLOW_ME, extra=True),
+    KeywordSpec("跟着我走", "zh", FOLLOW_ME, extra=True),
+    KeywordSpec("开始巡一圈", "zh", START_PATROL, extra=True),
+    KeywordSpec("去巡检", "zh", START_PATROL, extra=True),
+    KeywordSpec("你好小铁", "zh", WAKE, is_wake=True, extra=True),
+)
+
+ALL_KEYWORDS: tuple[KeywordSpec, ...] = KEYWORDS + EXTRA_KEYWORDS
+WAKE_NAMES: tuple[str, ...] = tuple(k.name for k in ALL_KEYWORDS if k.is_wake)
+
 CORE_INTENTS: tuple[str, ...] = (STOP, RETURN_HOME, FOLLOW_ME, START_PATROL)
 
 
 def keyword_by_name(name: str) -> KeywordSpec:
-    for spec in KEYWORDS:
+    for spec in ALL_KEYWORDS:
         if spec.name == name:
             return spec
     raise KeyError(f"unknown keyword name: {name!r}")

@@ -14,7 +14,7 @@ from kws_eval.sherpa import SherpaConfig, SherpaEngine
 log = logging.getLogger(__name__)
 
 # (boost score, trigger threshold). sherpa-onnx defaults are (1.0, 0.25).
-TUNINGS_QUICK = ((1.5, 0.25), (3.0, 0.15), (4.0, 0.08))
+TUNINGS_QUICK = ((1.5, 0.25), (3.0, 0.15), (4.0, 0.08), (5.0, 0.04))
 TUNINGS_FULL = (
     (1.0, 0.25),
     (1.5, 0.25),
@@ -22,18 +22,24 @@ TUNINGS_FULL = (
     (3.0, 0.15),
     (3.0, 0.08),
     (4.0, 0.08),
-    (5.0, 0.05),
+    (5.0, 0.04),
 )
+MODEL_VARIANTS = ((8, True), (16, True), (8, False))  # (chunk, int8)
+GRIDS = ("quick", "variants", "full")
 
 
 def grid(kind: str, model_dir: Path) -> list[SherpaConfig]:
-    tunings = TUNINGS_QUICK if kind == "quick" else TUNINGS_FULL
-    models = [(8, True)] if kind == "quick" else [(8, True), (16, True), (8, False)]
-    return [
-        SherpaConfig(model_dir, chunk=chunk, int8=int8, default_tuning=KeywordTuning(s, t))
-        for chunk, int8 in models
-        for s, t in tunings
-    ]
+    """``quick``: chunk-8 int8 over four tunings; ``variants``: the three shipped model builds at
+    one tuning; ``full``: every model build x every tuning."""
+    if kind not in GRIDS:
+        raise ValueError(f"unknown grid {kind!r}; choose from {GRIDS}")
+    if kind == "variants":
+        combos = [(c, i8, KeywordTuning(3.0, 0.15)) for c, i8 in MODEL_VARIANTS]
+    else:
+        tunings = TUNINGS_QUICK if kind == "quick" else TUNINGS_FULL
+        models = MODEL_VARIANTS[:1] if kind == "quick" else MODEL_VARIANTS
+        combos = [(c, i8, KeywordTuning(s, t)) for c, i8 in models for s, t in tunings]
+    return [SherpaConfig(model_dir, chunk=c, int8=i8, default_tuning=t) for c, i8, t in combos]
 
 
 def _run_one(cfg: SherpaConfig, manifest_path: Path, corpus_dir: Path) -> EvalResult:
@@ -55,14 +61,29 @@ def run_sweep(
         return [f.result() for f in futures]
 
 
+FA_PENALTY_PER_HOUR = 0.005  # recall points lost per false alarm/h when no config meets the gate
+
+
 def mean_noisy_recall(res: EvalResult, min_snr: float = 5.0) -> float:
-    rows = [r for r in res.clip_results if r.clip.snr_db is not None and r.clip.snr_db >= min_snr]
+    """Recall over noisy plan-list clips at SNR >= ``min_snr`` dB."""
+    rows = [r for r in res.core_clips if r.clip.snr_db is not None and r.clip.snr_db >= min_snr]
     return sum(r.hit for r in rows) / len(rows) if rows else 0.0
 
 
+def core_fa_per_hour(res: EvalResult) -> float:
+    hours = res.false_alarm.hours
+    return res.core_false_alarms / hours if hours else float("inf")
+
+
 def choose(results: list[EvalResult], fa_limit_per_hour: float = 1.0) -> EvalResult:
-    """Best SNR>=5 dB recall among configs meeting the false-alarm gate; else the fewest alarms."""
-    ok = [r for r in results if r.false_alarm.per_hour < fa_limit_per_hour]
+    """Pick the headline configuration.
+
+    Best SNR>=5 dB recall among configs meeting the false-alarm gate; if none does, the best
+    recall after a small false-alarm penalty (so a deaf-but-quiet config does not win by default).
+    """
+    ok = [r for r in results if core_fa_per_hour(r) < fa_limit_per_hour]
     if ok:
         return max(ok, key=mean_noisy_recall)
-    return min(results, key=lambda r: (r.false_alarm.per_hour, -mean_noisy_recall(r)))
+    return max(
+        results, key=lambda r: mean_noisy_recall(r) - FA_PENALTY_PER_HOUR * core_fa_per_hour(r)
+    )

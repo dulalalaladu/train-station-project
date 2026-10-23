@@ -9,10 +9,10 @@ from pathlib import Path
 import numpy as np
 
 from kws_eval.audio import SAMPLE_RATE, active_span, mix_at_snr, pitch_shift, write_wav
-from kws_eval.keywords import KEYWORDS, KeywordSpec
+from kws_eval.keywords import ALL_KEYWORDS, KeywordSpec
 from kws_eval.manifest import PositiveClip
 from kws_eval.noise import bed_clips, noise_bed
-from kws_eval.tts import TtsSynth
+from kws_eval.tts import TtsSynth, VoiceBank
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ def variants_for(speakers: tuple[int, ...], count: int) -> list[Variant]:
     return out
 
 
-def trimmed_utterance(tts: TtsSynth, text: str, variant: Variant) -> np.ndarray:
+def trimmed_utterance(tts: TtsSynth | VoiceBank, text: str, variant: Variant) -> np.ndarray:
     """Synthesise ``text`` and trim leading/trailing silence."""
     raw = tts.synth(text, variant.speaker, variant.speed)
     shifted = pitch_shift(raw, variant.pitch)
@@ -84,10 +84,10 @@ def _frame_clip(cfg: CorpusConfig, utt: np.ndarray) -> tuple[np.ndarray, float, 
 
 def build_positives(
     cfg: CorpusConfig,
-    zh: TtsSynth,
-    en: TtsSynth,
+    zh: TtsSynth | VoiceBank,
+    en: TtsSynth | VoiceBank,
     out_dir: Path,
-    specs: tuple[KeywordSpec, ...] = KEYWORDS,
+    specs: tuple[KeywordSpec, ...] = ALL_KEYWORDS,
 ) -> list[PositiveClip]:
     """Write every positive clip under ``out_dir/pos`` and return their metadata."""
     clips: list[PositiveClip] = []
@@ -97,26 +97,26 @@ def build_positives(
         for v_index, variant in enumerate(variants_for(tts.speakers, cfg.variants_per_keyword)):
             base, onset, offset = _frame_clip(cfg, trimmed_utterance(tts, spec.text, variant))
             seed = cfg.seed + 1000 * k_index + v_index
+            voice = tts.tag(variant.speaker)
             clips.extend(
                 _write_conditions(
-                    cfg, spec, variant, base, onset, offset, seed, out_dir, noise_kinds
+                    cfg, (spec, variant, voice), (base, onset, offset), seed, out_dir, noise_kinds
                 )
             )
     log.info("positives: %d clips", len(clips))
     return clips
 
 
-def _write_conditions(  # noqa: PLR0913
+def _write_conditions(
     cfg: CorpusConfig,
-    spec: KeywordSpec,
-    variant: Variant,
-    base: np.ndarray,
-    onset: float,
-    offset: float,
+    who: tuple[KeywordSpec, Variant, str],
+    framed: tuple[np.ndarray, float, float],
     seed: int,
     out_dir: Path,
     noise_kinds: tuple[str, ...],
 ) -> list[PositiveClip]:
+    spec, variant, voice = who
+    base, onset, offset = framed
     span = (int(onset * SAMPLE_RATE), int(offset * SAMPLE_RATE))
     conditions: list[tuple[str, float | None]] = [("none", None)]
     conditions += [(kind, snr) for kind in noise_kinds for snr in cfg.snr_levels]
@@ -136,6 +136,7 @@ def _write_conditions(  # noqa: PLR0913
                 intent=spec.intent,
                 lang=spec.lang,
                 speaker=variant.speaker,
+                voice=voice,
                 speed=variant.speed,
                 pitch=variant.pitch,
                 noise=kind,

@@ -23,9 +23,9 @@ Pieces, if you want them separately:
 
 | command | what it does |
 |---|---|
-| `uv run kws-eval fetch` | downloads the pinned official sherpa-onnx models (KWS + two TTS voices banks) and a few ESC-50 noise clips into `.cache/`, verifies/records SHA-256 |
-| `uv run kws-eval build-corpus` | TTS-synthesises 17 phrases x 12 variants (speakers, 0.85–1.2x speed, 0.92–1.1x pitch) x {clean, white/yard/ESC at SNR 10/5/0 dB} and 40 min of keyword-free audio (chatter, near-miss decoys, noise only) |
-| `uv run kws-eval sweep [--grid quick\|full] [--jobs N]` | runs sherpa-onnx over the corpus for each (chunk, precision, boost, threshold) point, writes `results/report.md` + `results/sweep.json` |
+| `uv run kws-eval fetch` | downloads the pinned official sherpa-onnx models (KWS + three TTS voice banks) and a few ESC-50 noise clips into `.cache/`, verifies/records SHA-256 |
+| `uv run kws-eval build-corpus [--negatives-only]` | TTS-synthesises the 17 plan phrases + 8 extra candidate aliases x 12 variants (voices, 0.85–1.2x speed, 0.92–1.1x pitch) x {clean, white/yard/ESC at SNR 10/5/0 dB} and 40 min of keyword-free audio (chatter, near-miss decoys, noise only) |
+| `uv run kws-eval sweep [--grid quick\|variants\|full] [--jobs N]` | runs sherpa-onnx over the corpus for each (chunk, precision, boost, threshold) point (`quick` = chunk-8 int8 x 4 tunings, `variants` = the 3 shipped model builds, `full` = both), writes `results/report.md` + `results/sweep.json` |
 | `uv run kws-eval bench --seconds 600 --threads 1,2` | sustained real-time load: CPU cores, RSS, temperature (use this on the Jetson) |
 | `uv run kws-eval bnf --lang zh` | prints the iFlytek BNF grammar generated from the same keyword table |
 
@@ -49,8 +49,11 @@ Nothing larger than a few KB is committed; models, noise clips and audio live in
   fetched at run time, never committed.
 * For the real re-test, drop recorded yard noise (`*.wav`, PCM16, any sample rate) into
   `.cache/noise/custom/` and rebuild the corpus; it is picked up as noise kind `custom`.
-* Speech is TTS (AISHELL-3 / LibriTTS-R voices). Real dialect pronunciation (歇倒, 莫动) and
-  shouted/Lombard speech are *not* represented; collect real recordings (plan §7.5) for sign-off.
+* Speech is TTS: Mandarin from MeloTTS (one natural-sounding voice, ~1/3 of the variants) and
+  icefall-AISHELL-3 (7 voices), English from Piper-LibriTTS-R (7 voices). The report prints the
+  recall per voice bank so the TTS dependence is visible. Real dialect pronunciation (歇倒, 莫动)
+  and shouted/Lombard speech are *not* represented; collect real recordings (plan §7.5) for
+  sign-off.
 
 ## Jetson Orin NX (JetPack 6, aarch64)
 

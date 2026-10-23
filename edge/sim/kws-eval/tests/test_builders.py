@@ -13,6 +13,9 @@ from kws_eval.manifest import PositiveClip
 class FakeTts:
     speakers = (1, 2, 3)
 
+    def tag(self, speaker):
+        return f"fake:{speaker}"
+
     def synth(self, text, speaker, speed=1.0):
         n = int((0.2 + 0.1 * len(text)) * SAMPLE_RATE / speed)
         t = np.arange(n) / SAMPLE_RATE
@@ -46,14 +49,18 @@ def test_noisy_clip_has_requested_snr_over_keyword_span(tmp_path):
     clips = build_positives(cfg, FakeTts(), FakeTts(), tmp_path, KEYWORDS[:1])
     clean = next(c for c in clips if c.snr_db is None and c.speaker == 1 and c.speed == 0.85)
     noisy = next(
-        c for c in clips if c.snr_db == 5.0 and c.speaker == 1 and c.speed == 0.85 and c.pitch == 0.92
+        c
+        for c in clips
+        if c.snr_db == 5.0 and c.speaker == 1 and c.speed == 0.85 and c.pitch == 0.92
     )
     x_clean, _ = read_wav(tmp_path / clean.file)
     x_noisy, _ = read_wav(tmp_path / noisy.file)
     lo, hi = int(clean.onset_s * SAMPLE_RATE), int(clean.offset_s * SAMPLE_RATE)
     gain = float(np.dot(x_noisy[lo:hi], x_clean[lo:hi]) / np.dot(x_clean[lo:hi], x_clean[lo:hi]))
     residual = x_noisy[lo:hi] - gain * x_clean[lo:hi]
-    snr = 20 * np.log10(np.sqrt(np.mean((gain * x_clean[lo:hi]) ** 2)) / np.sqrt(np.mean(residual**2)))
+    snr = 20 * np.log10(
+        np.sqrt(np.mean((gain * x_clean[lo:hi]) ** 2)) / np.sqrt(np.mean(residual**2))
+    )
     assert snr == pytest.approx(5.0, abs=1.0)
 
 
@@ -85,6 +92,42 @@ def test_negative_builder_covers_all_kinds_and_stays_keyword_free_by_constructio
         assert audio.size / rate == pytest.approx(6.0, abs=0.01)
         assert (clip.n_utterances == 0) == (clip.kind == "noise")
         assert np.max(np.abs(audio)) <= 1.0
+
+
+def test_voice_bank_flattens_banks_and_tags_voices():
+    from kws_eval.tts import VoiceBank
+
+    class Bank:
+        def __init__(self, name, speakers):
+            self.name, self.speakers = name, speakers
+
+        def synth(self, text, sid, speed=1.0):
+            return np.full(10, float(sid), dtype=np.float32)
+
+        def tag(self, sid):
+            return f"{self.name}:{sid}"
+
+    bank = VoiceBank((Bank("a", (7, 9)), Bank("b", (3,)), Bank("a", (7, 9))))
+    assert bank.speakers == (0, 1, 2, 3, 4)
+    assert [bank.tag(s) for s in bank.speakers] == ["a:7", "a:9", "b:3", "a:7", "a:9"]
+    assert bank.synth("x", 2)[0] == 3.0
+
+
+def test_noise_bed_is_deterministic_excerpt_and_handles_long_requests():
+    a = noise.noise_bed("yard", SAMPLE_RATE, 5)
+    assert np.array_equal(a, noise.noise_bed("yard", SAMPLE_RATE, 5))
+    assert not np.array_equal(a, noise.noise_bed("yard", SAMPLE_RATE, 6))
+    long = noise.noise_bed("white", (noise.BANK_SECONDS + 5) * SAMPLE_RATE, 1)
+    assert long.size == (noise.BANK_SECONDS + 5) * SAMPLE_RATE
+
+
+def test_extra_keywords_are_flagged_and_do_not_collide_with_the_plan_list():
+    from kws_eval.keywords import ALL_KEYWORDS, EXTRA_KEYWORDS, KEYWORDS, WAKE_NAMES
+
+    assert all(k.extra for k in EXTRA_KEYWORDS) and not any(k.extra for k in KEYWORDS)
+    names = [k.name for k in ALL_KEYWORDS]
+    assert len(set(names)) == len(names)
+    assert set(WAKE_NAMES) == {"小铁小铁", "你好小铁"}
 
 
 def test_esc_and_dir_loaders_handle_missing_and_bad_files(tmp_path):

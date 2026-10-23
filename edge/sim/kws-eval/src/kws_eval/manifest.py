@@ -18,7 +18,8 @@ class PositiveClip(BaseModel):
     keyword: str  # KeywordSpec.name
     intent: str
     lang: Literal["zh", "en"]
-    speaker: int
+    speaker: int  # index into the voice bank
+    voice: str = ""  # e.g. "aishell3:28", "melo:0", "libritts:120"
     speed: float = Field(gt=0)
     pitch: float = Field(gt=0)
     noise: NoiseKind

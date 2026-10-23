@@ -17,7 +17,7 @@ from kws_eval.keywords import KEYWORDS
 from kws_eval.manifest import Manifest
 from kws_eval.negatives import build_negatives
 from kws_eval.paths import cache_dir, results_dir
-from kws_eval.tts import TtsSynth
+from kws_eval.tts import TtsSynth, VoiceBank
 
 log = logging.getLogger("kws_eval")
 EXIT_USAGE = 2
@@ -36,7 +36,7 @@ def _kws_dir() -> Path:
 
 
 def cmd_fetch(args: argparse.Namespace) -> int:
-    for spec in (models.KWS_ZH_EN, models.TTS_ZH, models.TTS_EN):
+    for spec in (models.KWS_ZH_EN, models.TTS_ZH, models.TTS_MELO, models.TTS_EN):
         log.info("model ready: %s", models.fetch_model(spec))
     if not args.no_esc:
         try:
@@ -52,14 +52,20 @@ def cmd_build_corpus(args: argparse.Namespace) -> int:
         seed=args.seed, variants_per_keyword=args.variants, neg_minutes=args.neg_minutes
     )
     mdir = cache_dir() / "models"
-    zh = TtsSynth.chinese(mdir / models.TTS_ZH.top_dir, args.threads)
-    en = TtsSynth.english(mdir / models.TTS_EN.top_dir, args.threads)
+    aishell3 = TtsSynth.chinese(mdir / models.TTS_ZH.top_dir, args.threads)
+    melo = TtsSynth.melo_chinese(mdir / models.TTS_MELO.top_dir, args.threads)
+    # Melo is the most natural voice; it takes 4 of the 10 slots so ~1/3 of the variants use it.
+    zh = VoiceBank((melo, aishell3, melo, melo))
+    en = VoiceBank((TtsSynth.english(mdir / models.TTS_EN.top_dir, args.threads),))
     out = _corpus_dir()
-    positives = build_positives(cfg, zh, en, out)
+    if args.negatives_only and _manifest_path().exists():
+        positives = list(Manifest.load(_manifest_path()).positives)
+    else:
+        positives = build_positives(cfg, zh, en, out)
     negatives = build_negatives(cfg, zh, en, out)
     manifest = Manifest(
         seed=cfg.seed,
-        tts_model=f"{models.TTS_ZH.key}+{models.TTS_EN.key}",
+        tts_model=f"{models.TTS_ZH.key}+{models.TTS_MELO.key}+{models.TTS_EN.key}",
         positives=tuple(positives),
         negatives=tuple(negatives),
     )
@@ -129,7 +135,11 @@ def cmd_all(args: argparse.Namespace) -> int:
         (
             cmd_build_corpus,
             argparse.Namespace(
-                seed=args.seed, variants=12, neg_minutes=args.neg_minutes, threads=2
+                seed=args.seed,
+                variants=12,
+                neg_minutes=args.neg_minutes,
+                threads=2,
+                negatives_only=False,
             ),
         ),
         (cmd_sweep, argparse.Namespace(grid=args.grid, jobs=args.jobs)),
@@ -154,10 +164,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--variants", type=int, default=12, help="clips per keyword (>= 10)")
     p.add_argument("--neg-minutes", type=float, default=40.0, help="keyword-free audio (>= 30)")
     p.add_argument("--threads", type=int, default=2)
+    p.add_argument(
+        "--negatives-only",
+        action="store_true",
+        help="keep the existing positives, regenerate only the keyword-free audio",
+    )
     p.set_defaults(func=cmd_build_corpus)
 
     p = sub.add_parser("sweep", help="evaluate sherpa-onnx configurations, write results/")
-    p.add_argument("--grid", choices=("quick", "full"), default="quick")
+    p.add_argument("--grid", choices=("quick", "variants", "full"), default="quick")
     p.add_argument("--jobs", type=int, default=max(1, min(4, (os.cpu_count() or 2) // 2)))
     p.set_defaults(func=cmd_sweep)
 
@@ -177,7 +192,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_bnf)
 
     p = sub.add_parser("all", help="fetch + build-corpus + sweep (reproduces the ADR table)")
-    p.add_argument("--grid", choices=("quick", "full"), default="quick")
+    p.add_argument("--grid", choices=("quick", "variants", "full"), default="quick")
     p.add_argument("--jobs", type=int, default=max(1, min(4, (os.cpu_count() or 2) // 2)))
     p.add_argument("--seed", type=int, default=CorpusConfig.seed)
     p.add_argument("--neg-minutes", type=float, default=40.0)

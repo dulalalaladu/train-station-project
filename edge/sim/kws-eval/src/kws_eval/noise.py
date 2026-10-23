@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import csv
+import functools
 import hashlib
 import io
 import json
@@ -202,7 +203,21 @@ def noise_bed(kind: str, n_samples: int, seed: int) -> np.ndarray:
     """``n_samples`` of noise of ``kind`` (synthetic or sample-based), deterministic in ``seed``."""
     if kind in ("esc", "custom"):
         return tile_to_length(bed_clips(kind), n_samples, np.random.default_rng(seed))
-    return synth_noise(kind, seed, n_samples)
+    bank = _synth_bank(kind)
+    if n_samples > bank.size:
+        bank = np.tile(bank, -(-n_samples // bank.size))
+    start = int(np.random.default_rng(seed).integers(0, bank.size - n_samples + 1))
+    return bank[start : start + n_samples].copy()
+
+
+BANK_SECONDS = 330
+BANK_SEED = 7919
+
+
+@functools.cache
+def _synth_bank(kind: str) -> np.ndarray:
+    """One long deterministic recording per synthetic kind; clips are random excerpts of it."""
+    return synth_noise(kind, BANK_SEED, BANK_SECONDS * SAMPLE_RATE)
 
 
 def export_noise_preview(path: Path, kind: str, seconds: float = 20.0, seed: int = 0) -> None:
