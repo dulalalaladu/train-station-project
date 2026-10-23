@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>dog_vendor_bridge</name>
+  <version>0.1.0</version>
+  <description>Vendor-neutral bridge contract for the robot dog (Unitree Go2 / DEEP Robotics X30). Vendor SDKs live only in this package.</description>
+  <maintainer email="railvoice-a3@users.noreply.github.com">RailVoice A-3</maintainer>
+  <license>Proprietary</license>
+
+  <exec_depend>python3-pydantic</exec_depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
