@@ -5,11 +5,15 @@ It compares
 
 * **Candidate B** — sherpa-onnx streaming zipformer KWS (zh+en), fully runnable today;
 * **Candidate A** — iFlytek offline command-word SDK (BNF grammar) — *design only* until the
-  vendor ships an aarch64 package (owner action B-2, risk RK-05); see
-  [`docs/adr/0006-offline-kws.md`](../../../docs/adr/0006-offline-kws.md).
+  vendor ships an aarch64 package (owner action B-2, risk RK-05).
 
-Results, decision record and the Jetson re-test plan live in that ADR. This directory is the code.
-Nothing here is a ROS 2 node (that is T-110) and nothing can move a robot — it only processes wav files.
+Measured runs are in [`measurements/`](./measurements/README.md) — read the conditions section
+there before quoting a number. The candidate decision record and the Jetson re-test plan
+(`docs/adr/0006-offline-kws.md`) are **not written yet**: the laptop numbers are too weak and the
+negatives set too short to decide on.
+
+This directory is the code. Nothing here is a ROS 2 node (that is T-110) and nothing can move a
+robot — it only processes wav files.
 
 ## One command
 
