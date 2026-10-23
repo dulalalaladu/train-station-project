@@ -1,0 +1,8 @@
+# Normalise line endings so Windows and Linux checkouts hash identically
+# (husky hooks and shell scripts break with CRLF).
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.wav binary

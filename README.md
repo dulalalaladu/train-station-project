@@ -5,14 +5,22 @@
 
 ## 先读这些
 
-| 文件 | 用途 |
-|---|---|
-| `docs/铁路站场人机语音互动系统-实施策划书-v1.0.md` | 项目唯一事实源：需求分析、架构决策 D-01～D-12、协议、任务卡、Agent 简报、KPI |
-| `docs/parts/01-overview.md` … `12-actions-appendix.md` | 同一策划书按章节拆分，便于按需加载 |
-| `docs/seed/command-lexicon.v1.json` | 指令词库种子（三元组：中文主指令 / 方言别名 / 英文等价） |
-| `docs/owner-actions.md` | 业主行动项跟踪表（账号、备案、密钥、采购、现场） |
-| `docs/risk-register.md` | 风险登记册 |
-| `tools/windows-git-shim.ps1` | Windows 主机上让 Paperclip 托管的 GitHub 凭据对 git 生效的辅助脚本 |
+| 文件                                                   | 用途                                                                         |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `docs/铁路站场人机语音互动系统-实施策划书-v1.0.md`     | 项目唯一事实源：需求分析、架构决策 D-01～D-12、协议、任务卡、Agent 简报、KPI |
+| `docs/parts/01-overview.md` … `12-actions-appendix.md` | 同一策划书按章节拆分，便于按需加载                                           |
+| `docs/seed/command-lexicon.v1.json`                    | 指令词库种子（三元组：中文主指令 / 方言别名 / 英文等价）                     |
+| `docs/owner-actions.md`                                | 业主行动项跟踪表（账号、备案、密钥、采购、现场）                             |
+| `docs/risk-register.md`                                | 风险登记册                                                                   |
+| `tools/windows-git-shim.ps1`                           | Windows 主机上让 Paperclip 托管的 GitHub 凭据对 git 生效的辅助脚本           |
+
+## 快速开始
+
+```
+corepack enable && pnpm install && pnpm -r lint && pnpm -r test
+```
+
+详细步骤（Windows / Linux、`uv`、提交规范、推送方式）见 [`docs/runbooks/dev-setup.md`](docs/runbooks/dev-setup.md)。
 
 ## 仓库结构（由任务 T-001 建立）
 

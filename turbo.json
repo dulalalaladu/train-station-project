@@ -1,0 +1,29 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "envMode": "loose",
+  "globalDependencies": [
+    "pnpm-lock.yaml",
+    "uv.lock",
+    "pyproject.toml",
+    "tsconfig.base.json",
+    "eslint.config.mjs",
+    "vitest.shared.mjs",
+    ".prettierrc.json",
+    "scripts/run-py.mjs"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "typecheck": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": ["coverage/**"]
+    }
+  }
+}
