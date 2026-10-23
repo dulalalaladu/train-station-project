@@ -1,0 +1,13 @@
+{
+  "pages": ["pages/spike-audio/spike-audio"],
+  "window": {
+    "navigationBarTitleText": "RailVoice",
+    "backgroundColor": "#f5f5f5"
+  },
+  "permission": {
+    "scope.record": { "desc": "用于验证录音分片上传（T-005 Spike）" }
+  },
+  "lazyCodeLoading": "requiredComponents",
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

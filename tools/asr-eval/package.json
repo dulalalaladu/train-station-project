@@ -1,0 +1,10 @@
+{
+  "name": "@railvoice/asr-eval",
+  "version": "0.0.0",
+  "private": true,
+  "description": "语料回放与 ASR 准确率（CER、意图准确率、延迟）评估。",
+  "scripts": {
+    "lint": "node ../../scripts/run-py.mjs lint",
+    "test": "node ../../scripts/run-py.mjs test"
+  }
+}

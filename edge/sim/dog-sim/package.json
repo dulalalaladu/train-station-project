@@ -1,0 +1,10 @@
+{
+  "name": "@railvoice/dog-sim",
+  "version": "0.0.0",
+  "private": true,
+  "description": "虚拟狗（无 ROS 依赖）：订阅 MQTT、回 ack、发遥测、可注入告警；CI 使用。",
+  "scripts": {
+    "lint": "node ../../../scripts/run-py.mjs lint",
+    "test": "node ../../../scripts/run-py.mjs test"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@railvoice/ota-agent",
+  "version": "0.0.0",
+  "private": true,
+  "description": "狗端 OTA 代理：拉取已签名清单、校验、灰度升级与回滚。",
+  "scripts": {
+    "lint": "node ../../scripts/run-py.mjs lint",
+    "test": "node ../../scripts/run-py.mjs test"
+  }
+}

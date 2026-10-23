@@ -1,0 +1,16 @@
+# Node packages plus the Python members that carry a thin package.json wrapper
+# (so `pnpm -r lint|test` also runs ruff/black/pytest). Python deps live in the
+# uv workspace declared in pyproject.toml.
+packages:
+  - apps/*
+  - packages/*
+  - tools/*
+  - edge/ota-agent
+  - edge/sim/*
+
+# Single source of truth for tool versions shared by every package.
+catalog:
+  '@vitest/coverage-v8': ^5.0.5
+  eslint: ^10.13.0
+  typescript: ~6.0.3
+  vitest: ^5.0.5

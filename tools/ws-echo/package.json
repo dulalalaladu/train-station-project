@@ -1,0 +1,28 @@
+{
+  "name": "@railvoice/ws-echo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "T-005 联调用极简 WebSocket 回声服务：channel=1 音频帧回发为 channel=2，并回应 JSON 心跳。",
+  "bin": {
+    "ws-echo": "./src/cli.ts"
+  },
+  "scripts": {
+    "start": "node src/cli.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/ws": "^8.18.2",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "ws": "^8.22.0",
+    "zod": "^4.6.7"
+  }
+}

@@ -1,0 +1,63 @@
+<view class="page">
+  <view class="title">T-005 音频能力 Spike</view>
+  <view class="env">{{envText}}</view>
+
+  <view class="card">
+    <view class="row"><text class="label">WS 地址</text></view>
+    <input class="input" value="{{url}}" bindinput="onUrlInput" disabled="{{running}}" placeholder="ws://192.168.x.x:8787" />
+
+    <view class="row">
+      <text class="label">录音源</text>
+      <picker mode="selector" range="{{sourceLabels}}" value="{{sourceIdx}}" data-field="sourceIdx" bindchange="onPick" disabled="{{running}}">
+        <view class="pick">{{sourceLabels[sourceIdx]}}</view>
+      </picker>
+    </view>
+    <view class="row">
+      <text class="label">frameSize</text>
+      <picker mode="selector" range="{{frameLabels}}" value="{{frameIdx}}" data-field="frameIdx" bindchange="onPick" disabled="{{running}}">
+        <view class="pick">{{frameLabels[frameIdx]}}</view>
+      </picker>
+    </view>
+    <view class="row">
+      <text class="label">抖动缓冲</text>
+      <picker mode="selector" range="{{jitterLabels}}" value="{{jitterIdx}}" data-field="jitterIdx" bindchange="onPick" disabled="{{running}}">
+        <view class="pick">{{jitterLabels[jitterIdx]}}</view>
+      </picker>
+    </view>
+    <view class="row">
+      <text class="label">中断处理</text>
+      <picker mode="selector" range="{{interruptionLabels}}" value="{{interruptionIdx}}" data-field="interruptionIdx" bindchange="onPick" disabled="{{running}}">
+        <view class="pick">{{interruptionLabels[interruptionIdx]}}</view>
+      </picker>
+    </view>
+    <view class="row">
+      <text class="label">静音不发包</text>
+      <switch checked="{{silenceGate}}" bindchange="onGateChange" disabled="{{running}}" />
+    </view>
+
+    <view class="buttons">
+      <button type="primary" size="mini" bindtap="onStart" disabled="{{running}}">开始</button>
+      <button size="mini" bindtap="onStop" disabled="{{!running}}">停止</button>
+      <button size="mini" bindtap="onReset">清零统计</button>
+      <button size="mini" bindtap="onCopyReport">复制报告</button>
+    </view>
+    <view wx:if="{{error}}" class="error">{{error}}</view>
+  </view>
+
+  <view class="card">
+    <view class="metric"><text class="label">状态</text><text class="value" data-testid="phase">{{view.phase}}</text></view>
+    <view class="metric"><text class="label">分片间隔 均值/最大</text><text class="value {{view.intervalOk ? 'ok' : 'bad'}}" data-testid="interval">{{view.interval}}</text></view>
+    <view class="metric"><text class="label">上行</text><text class="value" data-testid="uplink">{{view.uplink}}</text></view>
+    <view class="metric"><text class="label">下行(echo)</text><text class="value" data-testid="downlink">{{view.downlink}}</text></view>
+    <view class="metric"><text class="label">播放欠载</text><text class="value" data-testid="underruns">{{view.underruns}}</text></view>
+    <view class="metric"><text class="label">音频往返 均值/最大</text><text class="value" data-testid="rtt">{{view.rtt}}</text></view>
+    <view class="metric"><text class="label">JSON 往返</text><text class="value" data-testid="json">{{view.jsonRtt}}</text></view>
+  </view>
+
+  <view class="card">
+    <view class="label">事件（新→旧）</view>
+    <scroll-view scroll-y class="events">
+      <view wx:for="{{view.events}}" wx:key="index" class="event">{{item}}</view>
+    </scroll-view>
+  </view>
+</view>
