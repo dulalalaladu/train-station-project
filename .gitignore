@@ -30,6 +30,7 @@ secrets/
 *.opus
 *.mp4
 !tools/asr-eval/fixtures/**
+!tools/xfyun-spike/fixtures/**
 
 # OS / editor / agent runtime
 .DS_Store
